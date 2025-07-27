@@ -8,15 +8,13 @@
 int main(){
     wordleADT wordle = newWordle();
     
-    char guess[] = "verza";
-
- //   addWords(wordle, word);
-
-   // choseWord(wordle);
     
     int dim = sizeWord(wordle);
 
     int estado[dim];
+
+    //TODO interactuar con el usuario
+    char guess[] = "verza";
 
     checkWord(wordle, guess, estado, &dim);
     for(int i = 0; i < dim; i++){
