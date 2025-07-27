@@ -1,16 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "WordleADT.h"
+#include <string.h>
+
+#define BITS 8
 
 int main(){
     wordleADT wordle = newWordle();
+    
+    char guess[] = "verza";
 
-    char word[] = "words";
-    char guess[] = "rrrrr";
+ //   addWords(wordle, word);
 
-    addWords(wordle, word);
-
-    choseWord(wordle);
+   // choseWord(wordle);
     
     int dim = sizeWord(wordle);
 

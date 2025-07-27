@@ -13,11 +13,13 @@ int sizeWord(wordleADT wordle);
 
 // carga word a las posibles palabras
 //TODO retorna ??
-int addWords(wordleADT wordle, char *word);
+
+//int addWords(wordleADT wordle, char *word);
 
 // elije una palabra de las posibles
 //TODO devuelve ?? si hay error o no
-int choseWord(wordleADT wordle);
+
+//int choseWord(wordleADT wordle);
 
 // devuelve en estado los valores de guess
 // devuele 0 si hay error 

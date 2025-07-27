@@ -4,6 +4,9 @@
 #include <time.h>
 #include <stdio.h>
 
+#define FILENAME "possible_solutions.txt"
+//#define FILENAME "words.txt"
+#define BITS 8
 
 #define LETTERS ('z'-'a'+1)
 #define IDX (word[0]-'a');
@@ -27,9 +30,20 @@ typedef struct wordleCDT{
     char *chosenWord;
     }CDT;
 
+int addFile(wordleADT wordle, char *filename);
+
+int choseWord(wordleADT wordle);
+
 wordleADT newWordle(){
     srand(time(NULL));
-    return calloc(1,sizeof(CDT));
+
+    wordleADT aux = calloc(1,sizeof(CDT));
+    
+    addFile(aux, FILENAME);
+
+    choseWord(aux);
+
+    return aux;
     }
 
 int sizeWord(wordleADT wordle){
@@ -57,15 +71,34 @@ int addWords(wordleADT wordle, char *word){
     int flag = 1;
     int idx = IDX;
 
-    if (wordle->wordlen == 0){
-        wordle->wordlen = strlen(word) +1;
-        }
-
     wordle->dicc[idx] = addWordrec(wordle->dicc[idx], word, &flag, wordle->wordlen);
     
     wordle->letterCount[idx] += flag;
-    wordle->wordCount += flag;
     return flag;
+    }
+
+int addFile(wordleADT wordle, char *filename){
+    FILE *file = fopen(filename, "r");//TODO cheackear fopen
+    char word[BITS];
+
+    char *p;
+
+    if((p = fgets(word, BITS, file)) == NULL){
+        //TODO esta vacio
+        }
+
+    wordle->wordlen = strlen(word);
+
+    while(p != NULL){
+        word[wordle->wordlen - 1] = '\0';
+        addWords(wordle, word);
+
+        p = fgets(word, BITS, file);
+
+        wordle->wordCount++;
+        }
+    printf("%ld \n", wordle->wordCount);
+    fclose(file);
     }
 
 int choseWord(wordleADT wordle){
