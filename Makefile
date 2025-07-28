@@ -1,17 +1,32 @@
 COMPILER        = gcc
 
-FLAGS           = -std=c99 -pedantic -Wall
+FLAGS           = -std=c99 -pedantic -Wall -lm
 MEM_FLAGS       = $(FLAGS) -fsanitize=address -g
 
-OBJS            = WordleADT.o wordle.o
+OBJS_ADT        = WordleADT.o
+OBJS_WORDLE     = $(OBJS_ADT) wordle.o
+OBJS_BOT        = $(OBJS_ADT) bot.o
 
-BINARY          = wordle
+BINARY_WORDLE   = wordle
+BINARY_BOT      = bot
 
-all.o: $(OBJS)
-	$(COMPILER) $(MEM_FLAGS) $(OBJS) -o $(BINARY)
+OBJS            = $(OBJS_ADT) wordle.o bot.o
+BINARY          = $(BINARY_WORDLE) $(BINARY_BOT)
+
+
+all.o: $(BINARY)
+
+wordle:$(OBJS_WORDLE)
+	$(COMPILER) $(MEM_FLAGS) $(OBJS_WORDLE) -o $(BINARY_WORDLE)
+
+bot:$(OBJS_BOT)
+	$(COMPILER) $(MEM_FLAGS) $(OBJS_BOT) -o $(BINARY_BOT)
 
 wordle.o: wordle.c WordleADT.h
 	$(COMPILER) $(FLAGS) -c wordle.c
+
+bot.o: WordleADT.h bot.c
+	$(COMPILER) $(FLAGS) -c bot.c
 
 WordleADT.o: WordleADT.h WordleADT.c
 	$(COMPILER) $(FLAGS) -c WordleADT.c

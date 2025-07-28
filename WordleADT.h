@@ -3,6 +3,12 @@
 
 typedef enum STATES {GREY = 0, YELLOW, GREEN, STATECOUNT} STATES;
 
+//devolucion de getInfo
+typedef struct info{
+    char *word;
+    double info;
+    }info;
+
 typedef struct wordleCDT * wordleADT;
 
 //FUNCIONES GENERALES QUE SE PUEDEN USAR PARA JUGAR
@@ -37,6 +43,10 @@ int checkWord(wordleADT worlde, char *guess, int *estado);
 
 //crea los datos necesarios para usar el bot
 int makeResult(wordleADT wordle);
+
+//devueve un vector ordenado por info y la cantidad de elementos en dim
+//liberar las words
+info *getInfo(wordleADT worlde, int *dim);
 
 void freeWordle(wordleADT wordle);
 

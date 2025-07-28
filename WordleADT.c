@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <math.h>
 
-//TODO funcion de info 
 //TODO funcion de eliminar palabras incogruentes
 
 #define FILENAME "possible_solutions.txt"
@@ -17,6 +16,7 @@
 #define LETTERS ('z'-'a'+1)
 #define RANDOM (double)(rand()/((double)RAND_MAX+1))
 #define ABS(c) ((c) > 0 ? (c):(-(c)))
+#define EPSILON 0.05
 
 //status es 1 o 0 por si la palabra es posible o no
 typedef struct words{
@@ -24,11 +24,17 @@ typedef struct words{
     int status;
     }words;
 
+typedef struct infoL{
+    struct info data;
+    struct infoL *tail;
+    }infoL;
+
 typedef struct wordleCDT{
     words *dicc;
     size_t reserved;
 
     size_t wordCount;
+    size_t actualCount;
     size_t wordlen;
 
     int **results;
@@ -97,6 +103,8 @@ int addFile(wordleADT wordle, char *filename){
         }
 
     wordle->dicc = realloc(wordle->dicc, wordle->wordCount*sizeof(words));
+
+    wordle->actualCount = wordle->wordCount;
 
     fclose(file);
     return 1;
@@ -198,6 +206,93 @@ int makeResult(wordleADT wordle){
         }
 
     return 1;//TODO ver que retorna
+    }
+
+infoL *addinfo(infoL *list, double info, char *word){
+    if(list == NULL || (list->data.info - info) < EPSILON){
+        infoL *aux = malloc(sizeof(infoL));
+
+        aux->tail = list;
+        aux->data.info = info;
+        aux->data.word = word;
+
+        return aux;
+        }
+    
+    list->tail = addinfo(list->tail, info, word);
+    return list;
+    }
+
+int *getRes(wordleADT wordle, int idx, int *len){
+    int statusCount = pow(STATECOUNT, wordle->wordlen-1);
+    int vec[statusCount];
+
+    for(int i = 0; i < statusCount; i++){
+        vec[i] = 0;
+        }
+
+    *len = 0;
+
+    for(int i = 0; i < wordle->wordCount; i++){
+        if(wordle->dicc[idx].status){
+            if (vec[wordle->results[idx][i]]++ == 0){
+                *len += 1;
+                }
+            }
+        }
+    
+    int *result = malloc(*len * sizeof(int));
+    int count = 0;
+
+    for(int i = 0; count < *len && i < statusCount; i++){
+        if(vec[i] != 0){
+            result[count++] = vec[i];
+            }
+        }
+    return result;
+    }
+
+info *getInfo(wordleADT wordle, int *dim){
+    *dim = 0;
+    double data;
+    char *word;
+    int len;
+    int *result;
+    
+    infoL *aux = NULL;
+    for(int i = 0; i < wordle->wordCount; i++){
+        if(wordle->dicc[i].status){
+            data = 0;
+            
+            result = getRes(wordle, i, &len);
+
+            for(int j = 0; j < len; j++){
+                double p = (double)result[j]/wordle->actualCount;
+                data -= p*log2(p);
+                }
+
+            free(result);
+
+            word = strcpy(malloc(wordle->wordlen), wordle->dicc[i].word);
+
+            aux = addinfo(aux, data, word);
+            *dim += 1;
+            }
+        }
+
+    info *vec = malloc(*dim*sizeof(info));
+
+    infoL *aux2;
+    int i = 0;
+    while(aux != NULL){
+        vec[i] = aux->data;
+        aux2 = aux;
+        aux = aux->tail;
+        free(aux2);
+        i++;
+        }
+
+    return vec;
     }
 
 //libera memoria
