@@ -1,6 +1,6 @@
 COMPILER        = gcc
 
-FLAGS           = -std=c99 -pedantic
+FLAGS           = -std=c99 -pedantic -Wall
 MEM_FLAGS       = $(FLAGS) -fsanitize=address -g
 
 OBJS            = WordleADT.o wordle.o

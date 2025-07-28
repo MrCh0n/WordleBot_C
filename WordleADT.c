@@ -3,25 +3,31 @@
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
+#include <math.h>
+
+//TODO funcion de info 
+//TODO funcion de eliminar palabras incogruentes
 
 #define FILENAME "possible_solutions.txt"
 //#define FILENAME "words.txt"
 #define BITS 8
 
+#define BLOCK 64
+
 #define LETTERS ('z'-'a'+1)
-#define IDX (word[0]-'a');
 #define RANDOM (double)(rand()/((double)RAND_MAX+1))
 #define ABS(c) ((c) > 0 ? (c):(-(c)))
 
+//status es 1 o 0 por si la palabra es posible o no
 typedef struct words{
     char *word;
-    struct words *tail;
+    int status;
     }words;
 
 typedef struct wordleCDT{
-    words *dicc[LETTERS];
-    size_t letterCount[LETTERS];
-    
+    words *dicc;
+    size_t reserved;
+
     size_t wordCount;
     size_t wordlen;
 
@@ -54,33 +60,23 @@ char *getWord(wordleADT wordle){
     return strcpy(malloc(wordle->wordlen), wordle->chosenWord);
     }
 
-words *addWordrec(words *list, char *word, int *flag, size_t len){
-    int c;
-    if(list == NULL || (c = strcmp(word, list->word)) < 0){
-        words *aux = malloc(sizeof(words));
-
-        aux->tail = list;
-        aux->word = strcpy(malloc(len), word);
-        return aux;
-        }
-    if(c == 0){
-        return list;
-        }
-    list->tail = addWordrec(list->tail, word, flag, len);
-    return list;
-    }
-
 //TODO decidir si devuelve algo
 int addWords(wordleADT wordle, char *word){
     int flag = 1;
-    int idx = IDX;
-
-    wordle->dicc[idx] = addWordrec(wordle->dicc[idx], word, &flag, wordle->wordlen);
     
-    wordle->letterCount[idx] += flag;
+    if(wordle->wordCount >= wordle->reserved){
+        wordle->reserved += BLOCK;
+        wordle->dicc = realloc(wordle->dicc, sizeof(words)*wordle->reserved);
+        }
+
+    wordle->dicc[wordle->wordCount].word = strcpy(malloc(wordle->wordlen), word);
+    wordle->dicc[wordle->wordCount].status = 1;
+    wordle->wordCount += 1;
+
     return flag;
     }
 
+//parsea filename para conseguir las palabras
 int addFile(wordleADT wordle, char *filename){
     FILE *file = fopen(filename, "r");//TODO cheackear fopen
     char word[BITS];
@@ -98,41 +94,23 @@ int addFile(wordleADT wordle, char *filename){
         addWords(wordle, word);
 
         p = fgets(word, BITS, file);
-
-        wordle->wordCount++;
         }
+
+    wordle->dicc = realloc(wordle->dicc, wordle->wordCount*sizeof(words));
+
     fclose(file);
+    return 1;
     }
 
+//elije una palabra del vector dicc y la guarda
 int choseWord(wordleADT wordle){
-    int idx = RANDOM * (LETTERS-1);
-    
-    while(wordle->letterCount[idx] == 0){
-        idx = RANDOM * (LETTERS-1);
-        }
-
-    int cantidad = RANDOM * wordle->letterCount[idx];
-    
-    words *aux = wordle->dicc[idx];
-
-    while(cantidad > 0){
-        aux = aux->tail;
-        cantidad--;
-        }
-    
-    wordle->chosenWord = strcpy(malloc(wordle->wordlen), aux->word);
+    int idx = RANDOM * wordle->wordCount;
+     
+    wordle->chosenWord = strcpy(malloc(wordle->wordlen), wordle->dicc[idx].word);
     return 1;//TODO que poner en return
     }
-/*
-int **makeResult(int size){
-    if(wordle->results == NULL){
-        wordle->results = makeResult(size);
-        }
-    return NULL;
-    }
-TODO por si se hace el bot
-*/
 
+//se fija si 1 letra de guess esta en word
 int check(int i, int size, char *word, char *guess){
     for (int j = 0; j < size; j++){
         if((guess[i]-word[j]) == 0){
@@ -143,6 +121,7 @@ int check(int i, int size, char *word, char *guess){
     return -1;
     }
 
+//crea la coloracion de la guess con la palabra guardada en el CDT
 int checkWord(wordleADT wordle, char *guess, int *estado){
     int total = 0;
 
@@ -176,19 +155,61 @@ int checkWord(wordleADT wordle, char *guess, int *estado){
     return -1;
     }
 
-void freeWords(words *list){
-    if(list == NULL){
-        return;
+int cross(wordleADT wordle, int idx1, int idx2){
+    int total = 0;
+    int mult = 1;
+
+    int size = wordle->wordlen-1;
+
+    char word1[size+1];
+    char word2[size+1];
+    
+    for(int i = 0; i<size+1; i++){
+        word1[i] = wordle->dicc[idx1].word[i];
+        word2[i] = wordle->dicc[idx2].word[i];
         }
-    freeWords(list->tail);
-    free(list->word);
-    free(list);
+
+    int c;
+    for (int i = 0; i < size; i++){
+        if((c = check(i, size, word2, word1)) < 0){
+            total += GREY*mult;
+            }
+        if(c > 0){
+            total += YELLOW*mult;
+            }
+        if(c == 0) {
+            total += GREEN*mult;
+            }
+        mult *= STATECOUNT;
+        }
+    return total;
     }
 
-void freeWordle(wordleADT wordle){
-    for(int i = 0; i < LETTERS; i++){
-        freeWords(wordle->dicc[i]);
+int makeResult(wordleADT wordle){
+    wordle->results = malloc(wordle->wordCount*sizeof(int*));
+    for (int i = 0; i <wordle->wordCount; i++){
+        wordle->results[i] = malloc(wordle->wordCount*sizeof(int));
         }
+
+    for (int i = 0; i <wordle->wordCount; i++){
+        for (int j = 0; j < wordle->wordCount; j++){
+            wordle->results[i][j] = cross(wordle, i, j);
+            }
+        }
+
+    return 1;//TODO ver que retorna
+    }
+
+//libera memoria
+void freeWordle(wordleADT wordle){
+    for(int i = 0; i < wordle->wordCount; i++){
+        free(wordle->dicc[i].word);
+        free(wordle->results[i]);
+        }
+    free(wordle->dicc);
+    free(wordle->results);
+
     free(wordle->chosenWord);
+
     free(wordle);
     }

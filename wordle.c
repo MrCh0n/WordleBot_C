@@ -15,6 +15,8 @@ int main(){
 
     char guess[2*dim];
     int contador = 0;
+    
+    makeResult(wordle);
 
     printf("Cantidad de letras: %d\n", dim);
     while(contador < JUEGOS){

@@ -1,11 +1,13 @@
 #ifndef wordle_ADT_h
 #define wordle_ADT_h
 
-typedef enum STATES {GREY = 0, YELLOW, GREEN, STATECOUNT} STATE;
+typedef enum STATES {GREY = 0, YELLOW, GREEN, STATECOUNT} STATES;
 
 typedef struct wordleCDT * wordleADT;
 
-// crea un nuevo wordle con las palabras en file
+//FUNCIONES GENERALES QUE SE PUEDEN USAR PARA JUGAR
+
+// crea un nuevo wordle y elije la palabra a encontrar
 wordleADT newWordle();
 
 // retorna el tamano de palabra sin '\0'
@@ -30,6 +32,11 @@ int choseWord(wordleADT wordle);
 // o el largo de estado en otro caso
 // liberar estado despues
 int checkWord(wordleADT worlde, char *guess, int *estado);
+
+//FUNCIONES PARA EL BOT
+
+//crea los datos necesarios para usar el bot
+int makeResult(wordleADT wordle);
 
 void freeWordle(wordleADT wordle);
 
