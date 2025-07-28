@@ -47,7 +47,11 @@ wordleADT newWordle(){
     }
 
 int sizeWord(wordleADT wordle){
-    return wordle->wordlen;
+    return wordle->wordlen - 1;
+    }
+
+char *getWord(wordleADT wordle){
+    return strcpy(malloc(wordle->wordlen), wordle->chosenWord);
     }
 
 words *addWordrec(words *list, char *word, int *flag, size_t len){
@@ -97,7 +101,6 @@ int addFile(wordleADT wordle, char *filename){
 
         wordle->wordCount++;
         }
-    printf("%ld \n", wordle->wordCount);
     fclose(file);
     }
 
@@ -140,12 +143,11 @@ int check(int i, int size, char *word, char *guess){
     return -1;
     }
 
-int checkWord(wordleADT wordle, char *guess, int *estado, int *dim){
+int checkWord(wordleADT wordle, char *guess, int *estado){
     int total = 0;
 
     int size = wordle->wordlen-1;
-    *dim = size;
-    
+
     char word[size];
     for(int i = 0; i<size; i++){
         word[i] = wordle->chosenWord[i];

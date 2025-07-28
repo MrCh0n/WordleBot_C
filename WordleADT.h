@@ -11,15 +11,17 @@ wordleADT newWordle();
 // retorna el tamano de palabra sin '\0'
 int sizeWord(wordleADT wordle);
 
+//retorna la palabra en la quiz, liberar
+char *getWord(wordleADT wordle);
+
 // carga word a las posibles palabras
 //TODO retorna ??
 
 //int addWords(wordleADT wordle, char *word);
 
-// elije una palabra de las posibles
+// elije una palabra nueva de las posibles
 //TODO devuelve ?? si hay error o no
-
-//int choseWord(wordleADT wordle);
+int choseWord(wordleADT wordle);
 
 // devuelve en estado los valores de guess
 // devuele 0 si hay error 
@@ -27,7 +29,7 @@ int sizeWord(wordleADT wordle);
 // 1 si es la palabra
 // o el largo de estado en otro caso
 // liberar estado despues
-int checkWord(wordleADT worlde, char *guess, int *estado, int *dim);
+int checkWord(wordleADT worlde, char *guess, int *estado);
 
 void freeWordle(wordleADT wordle);
 
