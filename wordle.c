@@ -16,15 +16,13 @@ int main(){
     char guess[2*dim];
     int contador = 0;
     
-    makeResult(wordle);
-
     printf("Cantidad de letras: %d\n", dim);
     while(contador < JUEGOS){
         int flag;
         do{
             printf("Ingrese su opcion:");
             scanf("%s", guess);
-            if(flag = (strlen(guess) != dim)){
+            if((flag = strlen(guess) != dim)){
                 printf("Cantidad invalida de letras\n");
                 }
         }while(flag);

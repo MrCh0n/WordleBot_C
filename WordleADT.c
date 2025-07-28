@@ -204,7 +204,9 @@ int makeResult(wordleADT wordle){
 void freeWordle(wordleADT wordle){
     for(int i = 0; i < wordle->wordCount; i++){
         free(wordle->dicc[i].word);
-        free(wordle->results[i]);
+        if (wordle->results != NULL){
+            free(wordle->results[i]);
+            }
         }
     free(wordle->dicc);
     free(wordle->results);
