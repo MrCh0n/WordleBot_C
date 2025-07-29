@@ -7,8 +7,9 @@
 
 //TODO funcion de eliminar palabras incogruentes
 
-#define FILENAME "possible_solutions.txt"
-//#define FILENAME "words.txt"
+//define FILENAME "prueba.txt"
+//define FILENAME "possible_solutions.txt"
+#define FILENAME "words.txt"
 #define BITS 8
 
 #define BLOCK 64
@@ -16,7 +17,6 @@
 #define LETTERS ('z'-'a'+1)
 #define RANDOM (double)(rand()/((double)RAND_MAX+1))
 #define ABS(c) ((c) > 0 ? (c):(-(c)))
-#define EPSILON 0.05
 
 //status es 1 o 0 por si la palabra es posible o no
 typedef struct words{
@@ -121,12 +121,15 @@ int choseWord(wordleADT wordle){
 //se fija si 1 letra de guess esta en word
 int check(int i, int size, char *word, char *guess){
     for (int j = 0; j < size; j++){
-        if((guess[i]-word[j]) == 0){
+        if((guess[i]-word[j]) == 0 && !(guess[i] == guess[j] && i != j)){
             word[j] -= guess[i];
-            return ABS(i-j);
+            if(i == j){
+                return GREEN;
+                }
+            return YELLOW;
             }
         }
-    return -1;
+    return GREY;
     }
 
 //crea la coloracion de la guess con la palabra guardada en el CDT
@@ -142,18 +145,9 @@ int checkWord(wordleADT wordle, char *guess, int *estado){
 
     int c;
     for (int i = 0; i < size; i++){
-        if((c = check(i, size, word, guess)) < 0){
-            estado[i] = GREY;
-            total += GREY;
-            }
-        if(c > 0){
-            estado[i] = YELLOW;
-            total += YELLOW;
-            }
-        if(c == 0) {
-            estado[i] = GREEN;
-            total += GREEN;
-            }
+        c = check(i, size, word, guess);
+        estado[i] = c;
+        total += c;
         }
 
     if(total == size*GREEN){
@@ -163,9 +157,8 @@ int checkWord(wordleADT wordle, char *guess, int *estado){
     return -1;
     }
 
-int cross(wordleADT wordle, int idx1, int idx2){
+int cross(wordleADT wordle, int idx1, int idx2, int mult[]){
     int total = 0;
-    int mult = 1;
 
     int size = wordle->wordlen-1;
 
@@ -176,19 +169,10 @@ int cross(wordleADT wordle, int idx1, int idx2){
         word1[i] = wordle->dicc[idx1].word[i];
         word2[i] = wordle->dicc[idx2].word[i];
         }
-
     int c;
     for (int i = 0; i < size; i++){
-        if((c = check(i, size, word2, word1)) < 0){
-            total += GREY*mult;
-            }
-        if(c > 0){
-            total += YELLOW*mult;
-            }
-        if(c == 0) {
-            total += GREEN*mult;
-            }
-        mult *= STATECOUNT;
+        c = check(i, size, word2, word1);
+        total += c*mult[i];
         }
     return total;
     }
@@ -199,9 +183,15 @@ int makeResult(wordleADT wordle){
         wordle->results[i] = malloc(wordle->wordCount*sizeof(int));
         }
 
+    int mult[wordle->wordlen-1];
+    mult[0] = 1;
+    for(int i = 1; i < wordle->wordlen-1; i++){
+        mult[i] = mult[i-1]*STATECOUNT;
+        }
+
     for (int i = 0; i <wordle->wordCount; i++){
         for (int j = 0; j < wordle->wordCount; j++){
-            wordle->results[i][j] = cross(wordle, i, j);
+            wordle->results[i][j] = cross(wordle, i, j, mult);
             }
         }
 
@@ -209,7 +199,7 @@ int makeResult(wordleADT wordle){
     }
 
 infoL *addinfo(infoL *list, double info, char *word){
-    if(list == NULL || (list->data.info - info) < EPSILON){
+    if(list == NULL || (list->data.info - info) < 0){
         infoL *aux = malloc(sizeof(infoL));
 
         aux->tail = list;

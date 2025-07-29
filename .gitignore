@@ -53,3 +53,10 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+#los ejecutables
+bot
+wordle
+
+#txt de prueba
+prueba.txt
