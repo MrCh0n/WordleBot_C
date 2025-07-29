@@ -5,6 +5,12 @@
 
 #define JUEGOS 6
 
+#define WHITE_TEXT    "\x1B[37m"
+#define YELLOW_TEXT   "\x1B[33m"
+#define GREEN_TEXT    "\x1B[32m"
+#define RED_TEXT      "\x1B[31m"
+#define RESET_COLOUR  "\x1B[0m"
+
 int main(){
     wordleADT wordle = newWordle();
     
@@ -30,7 +36,22 @@ int main(){
         flag = checkWord(wordle, guess, estado);
 
         for(int i = 0; i < dim; i++){
-            printf("%d ", estado[i]);
+
+            switch (estado[i]) {
+                case GREY:
+                  printf("%s%c%s ", WHITE_TEXT, guess[i], RESET_COLOUR);
+                  break;
+                case YELLOW:
+                  printf("%s%c%s ", YELLOW_TEXT, guess[i], RESET_COLOUR);
+                  break;
+                case GREEN:
+                  printf("%s%c%s ", GREEN_TEXT, guess[i], RESET_COLOUR);
+                  break;
+                default:
+                  printf("%sE%s ", RED_TEXT, RESET_COLOUR);
+                  break;
+                }
+
             }
         printf("\n");
         
