@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "WordleADT.h"
+#include <time.h>
 
 #define JUEGOS 6
 
@@ -23,4 +24,5 @@ int main(){
     free(data);
 
     freeWordle(wordle);
+    printf("%g\n", (double)clock()/CLOCKS_PER_SEC);
 }

@@ -8,8 +8,8 @@
 //TODO funcion de eliminar palabras incogruentes
 
 //define FILENAME "prueba.txt"
-//define FILENAME "possible_solutions.txt"
-#define FILENAME "words.txt"
+#define FILENAME "possible_solutions.txt"
+//#define FILENAME "words.txt"
 #define BITS 8
 
 #define BLOCK 64
