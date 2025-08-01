@@ -32,11 +32,9 @@ char *getWord(wordleADT wordle);
 int choseWord(wordleADT wordle);
 
 // devuelve en estado los valores de guess
-// devuele 0 si hay error 
 // -1 si no es la palabra
 // 1 si es la palabra
-// o el largo de estado en otro caso
-// liberar estado despues
+// 0 si la palabra no es valida
 int checkWord(wordleADT worlde, char *guess, int *estado);
 
 //FUNCIONES PARA EL BOT

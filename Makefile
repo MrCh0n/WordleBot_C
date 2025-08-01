@@ -20,10 +20,10 @@ debug: FLAGS += $(MEM_FLAGS)
 debug: all
 
 wordle:$(OBJS_WORDLE)
-	$(COMPILER) $(FLAGS) $(OBJS_WORDLE) -o $(BINARY_WORDLE) -lm
+	$(COMPILER) $(FLAGS) $(OBJS_WORDLE) -lm -o $(BINARY_WORDLE)
 
 bot:$(OBJS_BOT)
-	$(COMPILER) $(FLAGS) $(OBJS_BOT) -o $(BINARY_BOT) -lm
+	$(COMPILER) $(FLAGS) $(OBJS_BOT) -lm -o $(BINARY_BOT)
 
 wordle.o: wordle.c WordleADT.h
 	$(COMPILER) $(FLAGS) -c wordle.c
@@ -32,9 +32,9 @@ bot.o: WordleADT.h bot.c
 	$(COMPILER) $(FLAGS) -c bot.c
 
 WordleADT.o: WordleADT.h WordleADT.c
-	$(COMPILER) $(FLAGS) -c WordleADT.c
+	$(COMPILER) $(FLAGS) -c WordleADT.c -lm
 
 clear:
-	rm $(BINARY)
 	rm $(OBJS)
+	rm $(BINARY)
 

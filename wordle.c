@@ -28,12 +28,10 @@ int main(){
         do{
             printf("Ingrese su opcion:");
             scanf("%s", guess);
-            if((flag = strlen(guess) != dim)){
-                printf("Cantidad invalida de letras\n");
+            if(!(flag = checkWord(wordle, guess, estado))){
+                printf("Palabra invalida\n");
                 }
-        }while(flag);
-
-        flag = checkWord(wordle, guess, estado);
+        }while(!flag);
 
         for(int i = 0; i < dim; i++){
 
