@@ -57,7 +57,23 @@ int main(){
             contador = JUEGOS;
             printf("Felicidades por ganar\n");
             }
+/*jugar con ayuda
+    int len;
+    info *data;
+    double infoGain;
 
+    makeResult(wordle);
+
+    data = getInfo(wordle, &len, &infoGain);
+    len = (len>10 ? 10:len);
+    for (int i=0; i<len; i++){
+        printf("palabra: %s, info: %f \n", data[i].word, data[i].info);
+        }
+    for(int i = 0; i < len; i++){
+        free(data[i].word);
+        }
+    free(data);
+*/
         contador++;
 
         if(contador >= JUEGOS && flag < 0){

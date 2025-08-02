@@ -5,20 +5,20 @@
 #include <stdio.h>
 #include <math.h>
 
-//TODO funcion de eliminar palabras incogruentes
+//TODO funcion de eliminar palabras incogruentes esta mal
 
 //define FILENAME "prueba.txt"
 #define SOLUTIONS "possible_solutions.txt"
 #define TOTALWORDS "words.txt"
 #define BITS 8
 
-#define BLOCK 64
+#define BLOCK 512
 
 #define LETTERS ('z'-'a'+1)
 #define RANDOM (double)(rand()/((double)RAND_MAX+1))
 #define IDX(c) (c[0]-'a')
 
-//status es 1 o 0 por si la palabra es posible o no
+//status es 1 o 0 por si la palabra sigue activa o no
 typedef struct words{
     char *word;
     int status;
@@ -33,6 +33,7 @@ typedef struct wordleCDT{
     words *dicc;
     size_t wordCount;
     size_t actualCount;
+    size_t deleted;
     
     char **dicc_total[LETTERS];
     size_t amount_total[LETTERS];
@@ -69,7 +70,7 @@ char *getWord(wordleADT wordle){
     return strcpy(malloc(wordle->wordlen), wordle->chosenWord);
     }
 
-//parsea filename para conseguir las palabras
+//parsea los txt para conseguir las palabras
 int addFile(wordleADT wordle, char *solutions, char *total_words){
     FILE *file = fopen(solutions, "r");//TODO cheackear fopen
     char word[BITS];
@@ -141,7 +142,8 @@ int addFile(wordleADT wordle, char *solutions, char *total_words){
 //elije una palabra del vector dicc y la guarda
 int choseWord(wordleADT wordle){
     int idx = RANDOM * wordle->wordCount;
-     
+    free(wordle->chosenWord);
+
     wordle->chosenWord = strcpy(malloc(wordle->wordlen), wordle->dicc[idx].word);
     return 1;//TODO que poner en return
     }
@@ -173,18 +175,79 @@ int check_total(wordleADT wordle, char *guess){
     return 0;
     }
 
-//se fija si 1 letra de guess esta en word
+//se fija que estado ponerle a la letra de guess
 int check(int i, int size, char *word, char *guess){
+    if(guess[i] == word[i]){
+        word[i] -= guess[i];
+        return GREEN;
+        }
     for (int j = 0; j < size; j++){
-        if((guess[i]-word[j]) == 0 && !(guess[i] == guess[j] && i != j)){
+        if((guess[i]-word[j]) == 0){
             word[j] -= guess[i];
-            if(i == j){
-                return GREEN;
-                }
             return YELLOW;
             }
         }
     return GREY;
+    }
+
+//se fija si solo hay 1 letra 
+int only_one(char *word, char letter){
+    int count = 0;
+    int dim = strlen(word);
+    for(int i = 0; i < dim; i++){
+        if(word[i] == letter){
+            count++;
+            }
+        }
+    if(count > 1){
+        return 0;
+        }
+
+    return 1;
+    }
+
+//se fija si la letra pertenece a word
+int not_in_word(char *word, char letter){
+    int dim = strlen(word); 
+    for(int i = 0; i < dim; i++){
+        if(word[i] == letter){
+            return 0;
+            }
+        }
+    return 1;
+    }
+
+//cambia el status en dicc a 0 si letter no es compatible con state
+void deleteWords(wordleADT wordle, int state, int pos, char letter){
+    for(int i = 0; i < wordle->wordCount; i++){
+        words *aux = &wordle->dicc[i];
+        if(aux->status){
+            switch(state){
+                case GREY:
+                    for(int j = 0; j < wordle->wordlen-1 && aux->status; j++){
+                        if(aux->word[j] == letter && only_one(aux->word, letter)){
+                            aux->status = 0;
+                            wordle->deleted++;
+                            }
+                        }
+                    break;
+                case YELLOW:
+                    for(int j = 0; j < wordle->wordlen-1 && aux->status; j++){
+                        if(not_in_word(aux->word, letter) || aux->word[pos] == letter){
+                            aux->status = 0;
+                            wordle->deleted++;
+                            }
+                        }
+                    break;
+                case GREEN:
+                    if(aux->word[pos] != letter){
+                        aux->status = 0;
+                        wordle->deleted++;
+                        }
+                    break;
+                }
+            }
+        }
     }
 
 //crea la coloracion de la guess con la palabra guardada en el CDT
@@ -202,20 +265,26 @@ int checkWord(wordleADT wordle, char *guess, int *estado){
         word[i] = wordle->chosenWord[i];
         }
 
+    wordle->deleted = 0;
     int c;
     for (int i = 0; i < size; i++){
         c = check(i, size, word, guess);
         estado[i] = c;
         total += c;
+        deleteWords(wordle, c, i, guess[i]);
+        }
+    int sum = 0;
+    for(int i = 0; i < wordle->wordCount; i++){
+        sum += wordle->dicc[i].status;
         }
 
     if(total == size*GREEN){
         return 1;
         }
-
     return -1;
     }
 
+//crea el indice de hacer el checkword entre 2 palabras
 int cross(wordleADT wordle, int idx1, int idx2, int mult[]){
     int total = 0;
 
@@ -236,7 +305,11 @@ int cross(wordleADT wordle, int idx1, int idx2, int mult[]){
     return total;
     }
 
+//crea una matriz de todos los cruces de palabras
 int makeResult(wordleADT wordle){
+    if(wordle->results != NULL){
+        return 1;
+        }
     wordle->results = malloc(wordle->wordCount*sizeof(int*));
 
     int mult[wordle->wordlen-1];
@@ -256,6 +329,7 @@ int makeResult(wordleADT wordle){
     return 1;//TODO ver que retorna
     }
 
+//ordena por info
 infoL *addinfo(infoL *list, double info, char *word){
     if(list == NULL || (list->data.info - info) < 0){
         infoL *aux = malloc(sizeof(infoL));
@@ -271,19 +345,20 @@ infoL *addinfo(infoL *list, double info, char *word){
     return list;
     }
 
-double getRes(wordleADT wordle, int idx, int *len, int statusCount){
+//calcula la info de cada palabra
+double getRes(wordleADT wordle, int idx, int statusCount){
     int vec[statusCount];
     for(int i = 0; i < statusCount; i++){
         vec[i] = 0;
         }
 
-    *len = 0;
+    int len = 0;
 
     for(int i = 0; i < wordle->wordCount; i++){
         if(wordle->dicc[i].status){
             int c = wordle->results[idx][i];
             if (vec[c] == 0){
-                *len += 1;
+                len += 1;
                 }
             vec[c] += 1;
             }
@@ -292,7 +367,7 @@ double getRes(wordleADT wordle, int idx, int *len, int statusCount){
     double data = 0;
     int count = 0;
 
-    for(int i = 0; count < *len && i < statusCount; i++){
+    for(int i = 0; count < len && i < statusCount; i++){
         if(vec[i] != 0){
             double p = (double)vec[i]/wordle->actualCount;
             data -= p*log2(p);
@@ -303,18 +378,23 @@ double getRes(wordleADT wordle, int idx, int *len, int statusCount){
     return data;
     }
 
-info *getInfo(wordleADT wordle, int *dim){
+info *getInfo(wordleADT wordle, int *dim, double *infoGained){
     *dim = 0;
     double data;
     char *word;
-    int len;
 
     int statusCount = pow(STATECOUNT, wordle->wordlen-1);
+
+    double diff = wordle->actualCount - wordle->deleted;
+    double p = diff/wordle->actualCount;
+    *infoGained = -log2(p);
+
+    wordle->actualCount -= wordle->deleted;
     
     infoL *aux = NULL;
     for(int i = 0; i < wordle->wordCount; i++){
         if(wordle->dicc[i].status){
-            data = getRes(wordle, i, &len, statusCount);
+            data = getRes(wordle, i, statusCount);
 
             word = strcpy(malloc(wordle->wordlen), wordle->dicc[i].word);
 

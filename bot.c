@@ -11,10 +11,11 @@ int main(){
     
     int dim;
     info *data;
+    double infoGain;
 
     makeResult(wordle);
 
-    data = getInfo(wordle, &dim);
+    data = getInfo(wordle, &dim, &infoGain);
     for (int i=0; i<10; i++){
         printf("palabra: %s, info: %f \n", data[i].word, data[i].info);
         }

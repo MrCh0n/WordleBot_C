@@ -43,8 +43,9 @@ int checkWord(wordleADT worlde, char *guess, int *estado);
 int makeResult(wordleADT wordle);
 
 //devueve un vector ordenado por info y la cantidad de elementos en dim
+//devuelve la info ganada por la palabra que se elijio
 //liberar las words
-info *getInfo(wordleADT worlde, int *dim);
+info *getInfo(wordleADT worlde, int *dim, double *infoGained);
 
 void freeWordle(wordleADT wordle);
 
