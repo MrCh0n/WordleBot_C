@@ -182,7 +182,7 @@ int check(int i, int size, char *word, char *guess){
         return GREEN;
         }
     for (int j = 0; j < size; j++){
-        if((guess[i]-word[j]) == 0){
+        if((guess[i] == word[j]) && guess[j] != word[j]){
             word[j] -= guess[i];
             return YELLOW;
             }
@@ -218,14 +218,14 @@ int not_in_word(char *word, char letter){
     }
 
 //cambia el status en dicc a 0 si letter no es compatible con state
-void deleteWords(wordleADT wordle, int state, int pos, char letter){
+void deleteWords(wordleADT wordle, int state, int pos, char *guess){
     for(int i = 0; i < wordle->wordCount; i++){
         words *aux = &wordle->dicc[i];
         if(aux->status){
             switch(state){
                 case GREY:
                     for(int j = 0; j < wordle->wordlen-1 && aux->status; j++){
-                        if(aux->word[j] == letter && only_one(aux->word, letter)){
+                        if(aux->word[j] == guess[pos] && only_one(guess, guess[pos])){
                             aux->status = 0;
                             wordle->deleted++;
                             }
@@ -233,14 +233,14 @@ void deleteWords(wordleADT wordle, int state, int pos, char letter){
                     break;
                 case YELLOW:
                     for(int j = 0; j < wordle->wordlen-1 && aux->status; j++){
-                        if(not_in_word(aux->word, letter) || aux->word[pos] == letter){
+                        if(not_in_word(aux->word, guess[pos]) || aux->word[pos] == guess[pos]){
                             aux->status = 0;
                             wordle->deleted++;
                             }
                         }
                     break;
                 case GREEN:
-                    if(aux->word[pos] != letter){
+                    if(aux->word[pos] != guess[pos]){
                         aux->status = 0;
                         wordle->deleted++;
                         }
@@ -271,7 +271,7 @@ int checkWord(wordleADT wordle, char *guess, int *estado){
         c = check(i, size, word, guess);
         estado[i] = c;
         total += c;
-        deleteWords(wordle, c, i, guess[i]);
+        deleteWords(wordle, c, i, guess);
         }
     int sum = 0;
     for(int i = 0; i < wordle->wordCount; i++){
